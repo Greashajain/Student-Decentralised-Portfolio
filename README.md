@@ -2,7 +2,7 @@
 
 # 🎓 Student Decentralized Portfolio System
 
-A blockchain-based platform that allows students to securely store, update, and share their academic achievements, projects, extracurricular activities, and certificates. Uses **Ethereum (Sepolia Testnet)** and **IPFS** for storage, and can be integrated with **Flask** and **AI** for insights.
+A blockchain-based platform that allows students to securely store, update, and share their academic achievements, projects, extracurricular activities, and certificates. Uses **Ethereum (Sepolia Testnet)** and **IPFS** for storage, and can be integrated with **AI** for insights.
 
 ## 🚀 Features
 
