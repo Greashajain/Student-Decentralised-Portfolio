@@ -51,13 +51,7 @@ Use the `viewPortfolio(address)` function to retrieve:
 - [ ] Connect Metamask to frontend
 - [ ] Add AI-based analysis for student portfolios
 
-## 📜 License
 
-MIT License
-
----
-
-Let me know if you'd like to add screenshots, diagrams, or team info.
 
 
 
