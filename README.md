@@ -46,8 +46,6 @@ Use the `viewPortfolio(address)` function to retrieve:
 
 ## 🧪 To Do Next
 
-- [ ] Flask UI for user interaction
-- [ ] Upload certificates to IPFS via API
 - [ ] Connect Metamask to frontend
 - [ ] Add AI-based analysis for student portfolios
 
