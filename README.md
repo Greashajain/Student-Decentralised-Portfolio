@@ -19,8 +19,9 @@ A blockchain-based platform that allows students to securely store, update, and 
 - **IPFS** – Certificate storage
 - **Python (Flask)** – Backend integration
 - **Metamask** – Wallet interaction
+- **HTML CSS Javascript** – Frontend
 
-## 📁 Project Structure
+
 
 
 ## ⚙️ Deployment
@@ -49,8 +50,17 @@ Use the `viewPortfolio(address)` function to retrieve:
 
 
 
-
+## Screenshots
 
 
 <img src="https://github.com/user-attachments/assets/d40635d9-c2aa-4844-b79a-ea6a7d7d9f89" width="700" />
 
+<div style="display: flex; justify-content: space-around;">
+    <img src="https://github.com/user-attachments/assets/5fa8bdb7-557b-4892-ae4d-0b4ab4e67bdd" width="700" />
+     <img src="https://github.com/user-attachments/assets/7b1ffd1d-4774-4bdc-afe1-c5fab485ef66" width="600" />
+    <img src="https://github.com/user-attachments/assets/109170af-54c9-4c63-86fb-e0eaa9c830bf" width="400" />
+    <img src="https://github.com/user-attachments/assets/aa171c78-b906-4523-af7f-0d1a220a1e60" width="300" />
+    
+   
+    
+</div>
