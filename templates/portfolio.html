@@ -1,0 +1,224 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Create Your Portfolio</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
+  <script src="https://cdn.jsdelivr.net/npm/web3@latest/dist/web3.min.js"></script>
+</head>
+<body>
+  <div class="main-container">
+    <div class="form-container">
+      <h1>🧾 Create Your Portfolio</h1>
+      <form id="portfolioForm">
+
+        <label>Full Name</label>
+        <input type="text" name="name" placeholder="Enter your full name" required>
+
+        <!-- Academic Achievements -->
+        <div class="input-group">
+          <label>Academic Achievements</label>
+          <div class="multi-input">
+            <input type="text" name="achievements[]" placeholder="Enter academic achievement">
+            <button type="button" class="add-btn" onclick="addField(this)">+ Add More</button>
+          </div>
+        </div>
+
+        <!-- Projects -->
+        <div class="input-group">
+          <label>Projects</label>
+          <div class="multi-input">
+            <input type="text" name="projects[]" placeholder="Enter project">
+            <button type="button" class="add-btn" onclick="addField(this)">+ Add More</button>
+          </div>
+        </div>
+
+        <!-- Extracurricular -->
+        <div class="input-group">
+          <label>Extracurricular Activities</label>
+          <div class="multi-input">
+            <input type="text" name="activities[]" placeholder="Enter activity">
+            <button type="button" class="add-btn" onclick="addField(this)">+ Add More</button>
+          </div>
+        </div>
+
+        <!-- Certificates -->
+        <div class="input-group">
+          <label>Certificates (with Image Upload)</label>
+          <div class="multi-input cert-upload">
+            <input type="text" name="certificates[]" placeholder="Certificate Title">
+            <input type="file" name="certificateImages[]" accept=".jpg,.pdf">
+            <button type="button" class="add-btn" onclick="addCertificate(this)">+ Add More</button>
+          </div>
+        </div>
+
+        <button type="submit" class="submit-btn">
+          <i class="fas fa-save"></i> Save Portfolio
+        </button>
+      </form>
+    </div>
+  </div>
+
+  <script>
+    // Initialize Web3
+    let web3;
+    if (window.ethereum) {
+      web3 = new Web3(window.ethereum);
+      window.ethereum.enable(); // Request account access
+    } else {
+      alert("Please install MetaMask!");
+    }
+
+    // Contract address and ABI
+    const contractAddress = '0x4e4C68d970A36C445B51c7107028d091039a7bCe'; // Replace with your contract address
+    const abi = [
+      {
+        "inputs": [{ "internalType": "string[]", "name": "achievements", "type": "string[]" }],
+        "name": "addAchievements",
+        "outputs": [],
+        "stateMutability": "nonpayable",
+        "type": "function"
+      },
+      {
+        "inputs": [{ "internalType": "string[]", "name": "certificateHashes", "type": "string[]" }],
+        "name": "addCertificates",
+        "outputs": [],
+        "stateMutability": "nonpayable",
+        "type": "function"
+      },
+      {
+        "inputs": [{ "internalType": "string[]", "name": "activities", "type": "string[]" }],
+        "name": "addExtracurricularActivities",
+        "outputs": [],
+        "stateMutability": "nonpayable",
+        "type": "function"
+      },
+      {
+        "inputs": [{ "internalType": "string[]", "name": "projects", "type": "string[]" }],
+        "name": "addProjects",
+        "outputs": [],
+        "stateMutability": "nonpayable",
+        "type": "function"
+      },
+      {
+        "inputs": [{ "internalType": "string", "name": "_name", "type": "string" }],
+        "name": "createPortfolio",
+        "outputs": [],
+        "stateMutability": "nonpayable",
+        "type": "function"
+      },
+      {
+        "inputs": [{ "internalType": "address", "name": "", "type": "address" }],
+        "name": "portfolios",
+        "outputs": [{ "internalType": "string", "name": "name", "type": "string" }],
+        "stateMutability": "view",
+        "type": "function"
+      },
+      {
+        "inputs": [{ "internalType": "address", "name": "user", "type": "address" }],
+        "name": "viewPortfolio",
+        "outputs": [
+          { "internalType": "string", "name": "name", "type": "string" },
+          { "internalType": "string[]", "name": "achievements", "type": "string[]" },
+          { "internalType": "string[]", "name": "projects", "type": "string[]" },
+          { "internalType": "string[]", "name": "activities", "type": "string[]" },
+          { "internalType": "string[]", "name": "certificates", "type": "string[]" }
+        ],
+        "stateMutability": "view",
+        "type": "function"
+      }
+    ];
+    const contract = new web3.eth.Contract(abi, contractAddress);
+
+    // Function to add fields dynamically
+    function addField(button) {
+      const container = button.parentElement;
+      const newInput = document.createElement("input");
+      newInput.type = "text";
+      newInput.placeholder = "Enter more";
+      newInput.name = container.querySelector("input").name;
+      container.insertBefore(newInput, button);
+    }
+
+    function addCertificate(button) {
+      const container = button.parentElement;
+      const textInput = document.createElement("input");
+      const fileInput = document.createElement("input");
+
+      textInput.type = "text";
+      textInput.placeholder = "Certificate Title";
+      textInput.name = "certificates[]";
+
+      fileInput.type = "file";
+      fileInput.accept = ".jpg,.pdf";
+      fileInput.name = "certificateImages[]";
+
+      container.insertBefore(textInput, button);
+      container.insertBefore(fileInput, button);
+    }
+
+    // Handle form submission
+    document.getElementById("portfolioForm").addEventListener("submit", async function(e) {
+      e.preventDefault();
+
+      const name = this.name.value;
+      const achievements = Array.from(this.querySelectorAll("input[name='achievements[]']")).map(i => i.value).filter(v => v.trim() !== "");
+      const projects = Array.from(this.querySelectorAll("input[name='projects[]']")).map(i => i.value).filter(v => v.trim() !== "");
+      const activities = Array.from(this.querySelectorAll("input[name='activities[]']")).map(i => i.value).filter(v => v.trim() !== "");
+
+      try {
+        const accounts = await web3.eth.getAccounts();
+
+        // Create portfolio
+        await contract.methods.createPortfolio(name).send({ from: accounts[0] });
+
+        // Add data (Achievements, Projects, Activities)
+        async function addData(type, values) {
+          if (values.length > 0) {
+            await contract.methods[`add${type}`](values).send({ from: accounts[0] });
+          }
+        }
+
+        await addData("Achievements", achievements);
+        await addData("Projects", projects);
+        await addData("ExtracurricularActivities", activities);
+
+        // Handle certificate uploads
+        const certTitles = Array.from(this.querySelectorAll("input[name='certificates[]']")).map(i => i.value);
+        const certFiles = Array.from(this.querySelectorAll("input[name='certificateImages[]']"));
+
+        const uploadedCerts = [];
+
+        for (let i = 0; i < certFiles.length; i++) {
+          const file = certFiles[i].files[0];
+          const title = certTitles[i];
+
+          if (file && title.trim() !== "") {
+            const formData = new FormData();
+            formData.append("file", file);
+
+            const res = await fetch("/upload_certificate", {
+              method: "POST",
+              body: formData
+            });
+
+            const data = await res.json();
+            if (data.ipfs_hash) {
+              uploadedCerts.push(`${title}: https://gateway.pinata.cloud/ipfs/${data.ipfs_hash}`);
+            }
+          }
+        }
+
+        // Add certificates to blockchain
+        await addData("Certificates", uploadedCerts);
+
+        alert("Portfolio successfully submitted!");
+        this.reset();
+      } catch (error) {
+        console.error("Error submitting portfolio:", error);
+        alert("Failed to submit portfolio. Check console for details.");
+      }
+    });
+  </script>
+</body>
+</html>

@@ -1,4 +1,5 @@
-from flask import Flask, request, jsonify
+from flask import Flask, request, jsonify, render_template
+from flask_cors import CORS
 from dotenv import load_dotenv
 from web3 import Web3
 import json
@@ -8,6 +9,18 @@ import requests
 load_dotenv()
 
 app = Flask(__name__)
+@app.route("/")
+def home():
+    return render_template("index.html")
+
+@app.route('/second')
+def second():
+    return render_template('second.html')
+
+@app.route('/portfolio')
+def portfolio():
+    return render_template('portfolio.html')
+CORS(app)  # Enable CORS for all routes
 
 # Load environment variables
 INFURA_URL = os.getenv("INFURA_URL")
@@ -29,8 +42,7 @@ with open("build/contracts/StudentPortfolio.json") as f:
 # Connect to deployed contract
 contract = w3.eth.contract(address=Web3.to_checksum_address(CONTRACT_ADDRESS), abi=contract_abi)
 
-
-# ✅ Upload file to IPFS using Pinata
+# Upload file to IPFS using Pinata
 def upload_to_ipfs(file):
     url = "https://api.pinata.cloud/pinning/pinFileToIPFS"
     headers = {
@@ -41,80 +53,85 @@ def upload_to_ipfs(file):
     ipfs_hash = response.json()["IpfsHash"]
     return ipfs_hash
 
-
-# ✅ Create portfolio
+# Create portfolio
 @app.route("/create_portfolio", methods=["POST"])
 def create_portfolio():
-    name = request.json["name"]
+    try:
+        name = request.json["name"]
+        nonce = w3.eth.get_transaction_count(PUBLIC_ADDRESS)
+        txn = contract.functions.createPortfolio(name).build_transaction({
+            'chainId': CHAIN_ID,
+            'from': PUBLIC_ADDRESS,
+            'nonce': nonce,
+            'gas': 3000000,
+            'gasPrice': w3.to_wei("10", "gwei")
+        })
 
-    nonce = w3.eth.get_transaction_count(PUBLIC_ADDRESS)
-    txn = contract.functions.createPortfolio(name).build_transaction({
-        'chainId': CHAIN_ID,
-        'from': PUBLIC_ADDRESS,
-        'nonce': nonce,
-        'gas': 3000000,
-        'gasPrice': w3.to_wei("10", "gwei")
-    })
+        signed_txn = w3.eth.account.sign_transaction(txn, PRIVATE_KEY)
+        tx_hash = w3.eth.send_raw_transaction(signed_txn.rawTransaction)
+        return jsonify({"tx_hash": tx_hash.hex()})
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
 
-    signed_txn = w3.eth.account.sign_transaction(txn, PRIVATE_KEY)
-    tx_hash = w3.eth.send_raw_transaction(signed_txn.rawTransaction)
-    return jsonify({"tx_hash": tx_hash.hex()})
-
-
-# ✅ Add achievements, projects, activities, certificates
+# Add data (achievements, projects, etc.)
 @app.route("/add_data", methods=["POST"])
 def add_data():
-    data_type = request.json["type"]  # achievements, projects, etc.
-    values = request.json["values"]
+    try:
+        data_type = request.json["type"]
+        values = request.json["values"]
+        func_map = {
+            "achievements": contract.functions.addAchievements,
+            "projects": contract.functions.addProjects,
+            "activities": contract.functions.addExtracurricularActivities,
+            "certificates": contract.functions.addCertificates
+        }
 
-    func_map = {
-        "achievements": contract.functions.addAchievements,
-        "projects": contract.functions.addProjects,
-        "activities": contract.functions.addExtracurricularActivities,
-        "certificates": contract.functions.addCertificates
-    }
+        if data_type not in func_map:
+            return jsonify({"error": "Invalid type"}), 400
 
-    if data_type not in func_map:
-        return jsonify({"error": "Invalid type"}), 400
+        nonce = w3.eth.get_transaction_count(PUBLIC_ADDRESS)
+        txn = func_map[data_type](values).build_transaction({
+            'chainId': CHAIN_ID,
+            'from': PUBLIC_ADDRESS,
+            'nonce': nonce,
+            'gas': 3000000,
+            'gasPrice': w3.to_wei("10", "gwei")
+        })
 
-    nonce = w3.eth.get_transaction_count(PUBLIC_ADDRESS)
-    txn = func_map[data_type](values).build_transaction({
-        'chainId': CHAIN_ID,
-        'from': PUBLIC_ADDRESS,
-        'nonce': nonce,
-        'gas': 3000000,
-        'gasPrice': w3.to_wei("10", "gwei")
-    })
+        signed_txn = w3.eth.account.sign_transaction(txn, PRIVATE_KEY)
+        tx_hash = w3.eth.send_raw_transaction(signed_txn.rawTransaction)
+        return jsonify({"tx_hash": tx_hash.hex()})
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
 
-    signed_txn = w3.eth.account.sign_transaction(txn, PRIVATE_KEY)
-    tx_hash = w3.eth.send_raw_transaction(signed_txn.rawTransaction)
-    return jsonify({"tx_hash": tx_hash.hex()})
-
-
-# ✅ View portfolio
+# View portfolio
 @app.route("/view_portfolio", methods=["GET"])
 def view_portfolio():
-    user = request.args.get("address").strip()
-    user = Web3.to_checksum_address(user) 
-    name, achievements, projects, activities, certificates = contract.functions.viewPortfolio(user).call()
-    return jsonify({
-        "name": name,
-        "academicAchievements": achievements,
-        "projects": projects,
-        "extracurricularActivities": activities,
-        "certificates": certificates
-    })
+    try:
+        user = request.args.get("address").strip()
+        user = Web3.to_checksum_address(user)
+        name, achievements, projects, activities, certificates = contract.functions.viewPortfolio(user).call()
+        return jsonify({
+            "name": name,
+            "academicAchievements": achievements,
+            "projects": projects,
+            "extracurricularActivities": activities,
+            "certificates": certificates
+        })
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
 
-
-# ✅ Upload certificate image to IPFS
+# Upload certificate image to IPFS
 @app.route("/upload_certificate", methods=["POST"])
 def upload_certificate():
-    if "file" not in request.files:
-        return jsonify({"error": "No file provided"}), 400
-    file = request.files["file"]
-    ipfs_hash = upload_to_ipfs(file)
-    return jsonify({"ipfs_hash": ipfs_hash})
-
+    try:
+        if "file" not in request.files:
+            return jsonify({"error": "No file provided"}), 400
+        file = request.files["file"]
+        ipfs_hash = upload_to_ipfs(file)
+        return jsonify({"ipfs_hash": ipfs_hash})
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
 
 if __name__ == "__main__":
     app.run(debug=True)
