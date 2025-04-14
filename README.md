@@ -45,8 +45,6 @@ Use the `viewPortfolio(address)` function to retrieve:
 - Certificate IPFS hashes
 
 ## 🧪 To Do Next
-
-- [ ] Connect Metamask to frontend
 - [ ] Add AI-based analysis for student portfolios
 
 
@@ -54,4 +52,5 @@ Use the `viewPortfolio(address)` function to retrieve:
 
 
 
-![Image](https://github.com/user-attachments/assets/d40635d9-c2aa-4844-b79a-ea6a7d7d9f89)
+<img src="https://github.com/user-attachments/assets/d40635d9-c2aa-4844-b79a-ea6a7d7d9f89" width="700" />
+
