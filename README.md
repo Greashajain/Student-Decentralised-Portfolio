@@ -36,17 +36,20 @@ A blockchain-based platform that allows students to securely store, update, and 
     brownie run scripts/deploy.py --network sepolia
     ```
 
-## 🔍 View Portfolio
+## 🔍 How to View Portfolio
+Use the viewPortfolio(address) function (via Web3 or frontend button) to retrieve:
 
-Use the `viewPortfolio(address)` function to retrieve:
-- Name
-- Achievements
-- Projects
-- Extracurriculars
-- Certificate IPFS hashes
+👤 Name
 
-## 🧪 To Do Next
-- [ ] Add AI-based analysis for student portfolios
+🎓 Academic Achievements
+
+💻 Projects
+
+🏆 Extracurricular Activities
+
+📄 IPFS certificate links
+
+
 
 
 
@@ -64,3 +67,8 @@ Use the `viewPortfolio(address)` function to retrieve:
    
     
 </div>
+
+## 🧪 To Do Next
+- [ ] Add AI-based analysis for student portfolios
+
+
